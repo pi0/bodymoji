@@ -9,6 +9,10 @@ export default {
     '@nuxtjs/pwa'
   ],
 
+  manifest: {
+    name: 'Bodymoji'
+  },
+
   css: [
     '~/assets/app.css'
   ]
