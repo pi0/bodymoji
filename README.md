@@ -1,6 +1,6 @@
-#  BodyMoji
+#  Bodymoji
 
-Draws an emoji on your face! Powered by [Nuxt.js](https://nuxtjs.org), [Tensorflow.js](https://tensorflow.org/js) and [Posent](https://github.com/tensorflow/tfjs-models/tree/master/posenet)
+Draws an emoji on your face! Powered by [Nuxt.js](https://nuxtjs.org), [Tensorflow.js](https://tensorflow.org/js) and [Posenet](https://github.com/tensorflow/tfjs-models/tree/master/posenet).
 
 ## Development
 
