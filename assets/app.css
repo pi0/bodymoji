@@ -1,0 +1,8 @@
+body, .__layout, .__nuxt-error-page {
+  background: black;
+  display: flex;
+  margin: 0;
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+}
