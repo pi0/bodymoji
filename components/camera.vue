@@ -1,25 +1,12 @@
 <template>
   <div class="container">
-    <video
-      v-show="false"
-      ref="video"
-      :width="width"
-      :height="height"
-    />
-    <canvas
-      v-show="!error"
-      ref="output"
-      class="video"
-      :width="width"
-      :height="height"
-    />
-    <span
-      v-if="error"
-      class="error"
-    >
+    <video v-show="false" ref="video" />
+    <canvas v-show="!error" ref="output" />
+    <span v-if="error" class="error">
+      An error occured while initializing camera:
+      <br>
       {{ error }}
     </span>
-  </div>
   </div>
 </template>
 
@@ -42,7 +29,8 @@ video, canvas {
 </style>
 
 <script>
-import { detectPoseInRealTime } from '~/lib/posenet'
+import camera from '~/lib/camera'
+import posenet from '~/lib/posenet'
 
 export default {
   props: {
@@ -53,88 +41,40 @@ export default {
   },
   data() {
     return {
-      error: null,
-      width: 500,
-      height: 600
-    }
-  },
-  computed: {
-    video() {
-      return this.$refs.video
-    },
-    output() {
-      return this.$refs.output
-    },
-    userMediaSupported() {
-      return navigator && navigator.mediaDevices && navigator.mediaDevices.getUserMedia
+      error: null
     }
   },
   watch: {
     deviceId: 'setupCamera'
   },
-  async mounted() {
-    if (!this.userMediaSupported) {
-      this.error = 'Camera is not supported!'
-      return
-    }
-
-    await this.setupCamera()
+  mounted() {
+    this.setupCamera()
   },
   methods: {
     async setupCamera() {
       try {
         this.error = null
-        this.stop()
         await this._setupCamera()
       } catch (error) {
-        this.error = error + ''
+        console.error('[camera]', error) // eslint-disable-line no-console
+        this.error = error
       }
     },
     async _setupCamera() {
       if (!this.deviceId) {
-        return this.setError('No Camera Selected!')
+        this.error = 'No Camera Selected!'
+        return
       }
 
-      try {
-        this.stream = await navigator.mediaDevices.getUserMedia({
-          audio: false,
-          video: {
-            deviceId: {
-              exact: this.deviceId
-            }
-          }
-        })
-      } catch (error) {
-        throw new Error(error) // Fix error message
+      if (!camera.userMediaSupported) {
+        throw new Error('Camera is not supported!')
       }
 
-      this.video.srcObject = this.stream
-      this.video.play()
-      await new Promise((resolve) => {
-        this.video.onloadedmetadata = () => resolve()
-      })
+      // Start video stream
+      await camera.start(this.$refs.video, this.deviceId)
 
-      this.width = this.video.videoWidth
-      this.height = this.video.videoWidth
-
-      this.net = await detectPoseInRealTime(this.video, this.output, {
-        videoWidth: this.width,
-        videoHeight: this.height
-      })
-    },
-    stop() {
-      if (this.net) {
-        this.net.dispose()
-      }
-
-      this.video.pause()
-      this.video.srcObject = null
-
-      if (this.stream) {
-        for (const track of this.stream.getTracks()) {
-          track.stop()
-        }
-      }
+      // Start drawing on canvas
+      await posenet.start(this.$refs.video, this.$refs.output)
     }
   }
 }

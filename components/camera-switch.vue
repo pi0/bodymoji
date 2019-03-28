@@ -4,7 +4,7 @@
   </div>
 </template>
 
-<style>
+<style scoped>
 .switch-btn {
   display: inline-block;
   width: 40px;
@@ -20,6 +20,8 @@
 </style>
 
 <script>
+import camera from '~/lib/camera'
+
 export default {
   data() {
     return {
@@ -27,10 +29,17 @@ export default {
       index: 0
     }
   },
-  async mounted() {
-    await this.getDevices()
+  mounted() {
+    this.getDevices()
   },
   methods: {
+    async getDevices() {
+      // Get devices
+      this.devices = await camera.getDevices()
+
+      // Emit id of active device
+      this.emitId()
+    },
     next() {
       this.index += 1
       if (this.index >= this.devices.length) {
@@ -40,13 +49,6 @@ export default {
     },
     emitId() {
       this.$emit('input', this.devices[this.index].deviceId)
-    },
-    async getDevices() {
-      const devices = await navigator.mediaDevices.enumerateDevices()
-        .then(devices => devices.filter(deviceInfo => deviceInfo.kind === 'videoinput'))
-
-      this.devices = devices
-      this.emitId()
     }
   }
 }
